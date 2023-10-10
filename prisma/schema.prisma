@@ -1,0 +1,107 @@
+// This is your Prisma schema file,
+// learn more about it in the docs: https://pris.ly/d/prisma-schema
+
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "postgresql"
+  url      = env("DATABASE_URL")
+}
+
+model User {
+  id        String       @id @default(cuid())
+  email     String    @unique
+  lastName  String?
+  firstName      String?
+  username  String   @unique
+  password  String
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+  userType  UserType @default(USER)
+  summary   Summary[]
+  sales Sales[]
+}
+
+model Incomes {
+  id        String  @id @default(cuid())
+  amount    Int
+  sum      Int
+  description    String
+  summary      Summary     @relation(fields: [summaryId], references: [id])
+  summaryId    String
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+}
+
+model Expenses {
+  id        String  @id @default(cuid())
+  amount    Int
+  sum      Int
+  description    String
+  summary      Summary     @relation(fields: [summaryId], references: [id])
+  summaryId    String
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+}
+
+model Summary {
+  id  String @id @default(cuid())
+  incomes  Incomes[]
+  expenses Expenses[]
+  user User @relation(fields: [userId], references: [id])
+  userId String
+}
+
+model Sales {
+  id        String  @id @default(cuid())
+  customerName    String?
+  network   NetworkType
+  amount    Int
+  profit    Int?
+  total     Int?
+  receivedTo String?
+  costPrice CostPrice[]
+  user      User     @relation(fields:[userId], references: [id])
+  userId    String
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+}
+
+model CostPrice {
+  id        String  @id @default(cuid())
+  network   NetworkType
+  amount    Int
+  type      salesType
+  value     Int
+  sales      Sales     @relation(fields: [salesId], references: [id])
+  salesId    String
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+}
+
+
+
+
+
+
+enum UserType {
+  USER
+  ADMIN
+}
+
+enum NetworkType {
+  MTN
+  GLO
+  AIRTEL
+  SMILE
+  MOBILE @map("9MOBILE")
+}
+
+enum salesType {
+  credit
+  data
+  electricity
+} 
+
