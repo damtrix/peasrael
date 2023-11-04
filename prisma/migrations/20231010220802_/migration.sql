@@ -5,7 +5,10 @@ CREATE TYPE "UserType" AS ENUM ('USER', 'ADMIN');
 CREATE TYPE "NetworkType" AS ENUM ('MTN', 'GLO', 'AIRTEL', 'SMILE', '9MOBILE');
 
 -- CreateEnum
-CREATE TYPE "salesType" AS ENUM ('credit', 'data', 'electricity');
+CREATE TYPE "SalesType" AS ENUM ('airtime', 'data', 'electricity');
+
+-- CreateEnum
+CREATE TYPE "DataType" AS ENUM ('SME', 'COOPERATE', 'GIFTING');
 
 -- CreateTable
 CREATE TABLE "User" (
@@ -13,6 +16,7 @@ CREATE TABLE "User" (
     "email" TEXT NOT NULL,
     "lastName" TEXT,
     "firstName" TEXT,
+    "phone" TEXT,
     "username" TEXT NOT NULL,
     "password" TEXT NOT NULL,
     "createdAt" TIMESTAMP(3) NOT NULL DEFAULT CURRENT_TIMESTAMP,
@@ -26,7 +30,6 @@ CREATE TABLE "User" (
 CREATE TABLE "Incomes" (
     "id" TEXT NOT NULL,
     "amount" INTEGER NOT NULL,
-    "sum" INTEGER NOT NULL,
     "description" TEXT NOT NULL,
     "summaryId" TEXT NOT NULL,
     "createdAt" TIMESTAMP(3) NOT NULL DEFAULT CURRENT_TIMESTAMP,
@@ -39,7 +42,6 @@ CREATE TABLE "Incomes" (
 CREATE TABLE "Expenses" (
     "id" TEXT NOT NULL,
     "amount" INTEGER NOT NULL,
-    "sum" INTEGER NOT NULL,
     "description" TEXT NOT NULL,
     "summaryId" TEXT NOT NULL,
     "createdAt" TIMESTAMP(3) NOT NULL DEFAULT CURRENT_TIMESTAMP,
@@ -51,6 +53,8 @@ CREATE TABLE "Expenses" (
 -- CreateTable
 CREATE TABLE "Summary" (
     "id" TEXT NOT NULL,
+    "incomeTotal" INTEGER NOT NULL,
+    "expenseTotal" INTEGER NOT NULL,
     "userId" TEXT NOT NULL,
 
     CONSTRAINT "Summary_pkey" PRIMARY KEY ("id")
@@ -61,10 +65,11 @@ CREATE TABLE "Sales" (
     "id" TEXT NOT NULL,
     "customerName" TEXT,
     "network" "NetworkType" NOT NULL,
-    "amount" INTEGER NOT NULL,
     "profit" INTEGER,
-    "total" INTEGER,
+    "outPrice" INTEGER,
     "receivedTo" TEXT,
+    "type" "SalesType" NOT NULL,
+    "dataType" "DataType" NOT NULL,
     "userId" TEXT NOT NULL,
     "createdAt" TIMESTAMP(3) NOT NULL DEFAULT CURRENT_TIMESTAMP,
     "updatedAt" TIMESTAMP(3) NOT NULL,
@@ -77,13 +82,29 @@ CREATE TABLE "CostPrice" (
     "id" TEXT NOT NULL,
     "network" "NetworkType" NOT NULL,
     "amount" INTEGER NOT NULL,
-    "type" "salesType" NOT NULL,
-    "value" INTEGER NOT NULL,
+    "type" "SalesType" NOT NULL,
+    "dataType" "DataType",
+    "quantity" TEXT,
     "salesId" TEXT NOT NULL,
     "createdAt" TIMESTAMP(3) NOT NULL DEFAULT CURRENT_TIMESTAMP,
     "updatedAt" TIMESTAMP(3) NOT NULL,
 
     CONSTRAINT "CostPrice_pkey" PRIMARY KEY ("id")
+);
+
+-- CreateTable
+CREATE TABLE "SellingPrice" (
+    "id" TEXT NOT NULL,
+    "network" "NetworkType" NOT NULL,
+    "amount" INTEGER NOT NULL,
+    "type" "SalesType" NOT NULL,
+    "dataType" "DataType",
+    "quantity" TEXT,
+    "salesId" TEXT NOT NULL,
+    "createdAt" TIMESTAMP(3) NOT NULL DEFAULT CURRENT_TIMESTAMP,
+    "updatedAt" TIMESTAMP(3) NOT NULL,
+
+    CONSTRAINT "SellingPrice_pkey" PRIMARY KEY ("id")
 );
 
 -- CreateIndex
@@ -106,3 +127,6 @@ ALTER TABLE "Sales" ADD CONSTRAINT "Sales_userId_fkey" FOREIGN KEY ("userId") RE
 
 -- AddForeignKey
 ALTER TABLE "CostPrice" ADD CONSTRAINT "CostPrice_salesId_fkey" FOREIGN KEY ("salesId") REFERENCES "Sales"("id") ON DELETE RESTRICT ON UPDATE CASCADE;
+
+-- AddForeignKey
+ALTER TABLE "SellingPrice" ADD CONSTRAINT "SellingPrice_salesId_fkey" FOREIGN KEY ("salesId") REFERENCES "Sales"("id") ON DELETE RESTRICT ON UPDATE CASCADE;
